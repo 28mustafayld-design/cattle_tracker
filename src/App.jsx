@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import Dashboard from './components/Dashboard';
 import AddAnimalModal from './components/AddAnimalModal';
 import AnimalDetailModal from './components/AnimalDetailModal';
-import { getAllCows, addCow, updateCow, deleteCow, importData, exportData } from './db';
+import SyncModal from './components/SyncModal';
+import { getAllCows, getCow, addCow, updateCow, deleteCow, importData, exportData } from './db';
+import { isSyncActive, syncData, pushLiveChange } from './syncService';
 
 export default function App() {
   const [cows, setCows] = useState([]);
@@ -11,9 +13,11 @@ export default function App() {
   const [section, setSection] = useState('suru'); // 'suru' or 'vefat'
   const [selectedId, setSelectedId] = useState(null);
   const [showAdd, setShowAdd] = useState(false);
+  const [showSync, setShowSync] = useState(false);
+  const [syncActive, setSyncActive] = useState(false);
   const [dark, setDark] = useState(false);
 
-  // Initialize Theme and Fetch Cows
+  // Initialize Theme, Sync Status, and Fetch Cows
   useEffect(() => {
     // 1. Theme Configuration
     const localTheme = localStorage.getItem('theme');
@@ -29,6 +33,17 @@ export default function App() {
 
     // 2. Fetch Data from IndexedDB
     fetchCows();
+
+    // 3. Initial Cloud Sync on Startup if active
+    const active = isSyncActive();
+    setSyncActive(active);
+    if (active) {
+      syncData().then(result => {
+        if (result.success) {
+          fetchCows(); // Refresh list with newly pulled cows
+        }
+      });
+    }
   }, []);
 
   const fetchCows = async () => {
@@ -58,8 +73,16 @@ export default function App() {
   // Add Cow Action
   const handleAdd = async (newCow) => {
     try {
-      await addCow(newCow);
+      const addedId = await addCow(newCow);
       await fetchCows();
+      
+      // Push live update to Firebase if online
+      if (isSyncActive()) {
+        const cowFromDb = await getCow(addedId);
+        if (cowFromDb) {
+          pushLiveChange(cowFromDb);
+        }
+      }
     } catch (error) {
       alert('İnek eklenirken hata oluştu: ' + error.message);
     }
@@ -70,6 +93,14 @@ export default function App() {
     try {
       await updateCow(updatedCow);
       await fetchCows();
+
+      // Push live update to Firebase if online
+      if (isSyncActive()) {
+        const cowFromDb = await getCow(updatedCow.id);
+        if (cowFromDb) {
+          pushLiveChange(cowFromDb);
+        }
+      }
     } catch (error) {
       alert('Güncelleme sırasında hata oluştu: ' + error.message);
     }
@@ -83,6 +114,14 @@ export default function App() {
         setSelectedId(null);
       }
       await fetchCows();
+
+      // Push deletion state (soft delete) to Firebase if online
+      if (isSyncActive()) {
+        const cowFromDb = await getCow(id);
+        if (cowFromDb) {
+          pushLiveChange(cowFromDb);
+        }
+      }
     } catch (error) {
       alert('Silme işlemi sırasında hata oluştu: ' + error.message);
     }
@@ -114,10 +153,21 @@ export default function App() {
     try {
       await importData(jsonString);
       await fetchCows();
+      
+      // If sync is active, upload imported data to cloud
+      if (isSyncActive()) {
+        syncData();
+      }
+
       alert('Yedek başarıyla yüklendi!');
     } catch (error) {
       alert('Yedek yüklenirken hata oluştu: ' + error.message);
     }
+  };
+
+  const handleSyncSettingsChange = () => {
+    setSyncActive(isSyncActive());
+    fetchCows();
   };
 
   const selectedCow = cows.find(c => c.id === selectedId);
@@ -139,6 +189,8 @@ export default function App() {
         onExport={handleExport}
         dark={dark}
         onToggleDark={handleToggleDark}
+        isSyncActive={syncActive}
+        onOpenSync={() => setShowSync(true)}
       />
 
       {/* Modals */}
@@ -154,6 +206,12 @@ export default function App() {
         onClose={() => setSelectedId(null)}
         onUpdate={handleUpdate}
         onDelete={handleDelete}
+      />
+
+      <SyncModal
+        isOpen={showSync}
+        onClose={() => setShowSync(false)}
+        onSyncSuccess={handleSyncSettingsChange}
       />
     </div>
   );

@@ -16,7 +16,9 @@ export default function Dashboard({
   onImport,
   onExport,
   dark,
-  onToggleDark
+  onToggleDark,
+  isSyncActive,
+  onOpenSync
 }) {
   const fileInputRef = useRef(null);
 
@@ -81,7 +83,20 @@ export default function Dashboard({
             </div>
 
             {/* Actions: Import, Export, Darkmode, Add */}
-            <div className="flex items-center flex-wrap justify-center gap-2 select-none">
+            <div className="flex items-center flex-wrap justify-center gap-3 select-none">
+              {/* Cloud Sync Button */}
+              <button
+                onClick={onOpenSync}
+                title="Bulut Senkronizasyonu"
+                className={`font-bold text-xs py-2 px-3 rounded-xl border flex items-center gap-1 transition-all shadow-sm ${
+                  isSyncActive
+                    ? 'bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-100 border-emerald-500/40 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-800/30'
+                    : 'bg-white/10 hover:bg-white/20 dark:bg-zinc-800/60 dark:hover:bg-zinc-700/60 text-white border-white/20 dark:border-zinc-700/50'
+                }`}
+              >
+                <span>☁️</span> {isSyncActive ? 'Bulut Aktif' : 'Bulut Eşitle'}
+              </button>
+
               {/* Import JSON */}
               <button
                 onClick={() => fileInputRef.current?.click()}
