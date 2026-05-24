@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { calcAge, cowIcon, STATUS_STYLES, BREEDS, NOTE_TYPES, NOTE_STYLES } from '../utils';
+import CameraCaptureModal from './CameraCaptureModal';
 
 export default function AnimalDetailModal({ cow, isOpen, onClose, onUpdate, onDelete }) {
   if (!isOpen || !cow) return null;
@@ -13,6 +14,10 @@ export default function AnimalDetailModal({ cow, isOpen, onClose, onUpdate, onDe
     type: 'Aşı',
     text: ''
   });
+
+  const [showPhotoOptions, setShowPhotoOptions] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
+  const fileInputRef = useRef(null);
 
   // Sync form state when cow changes
   useEffect(() => {
@@ -131,22 +136,30 @@ export default function AnimalDetailModal({ cow, isOpen, onClose, onUpdate, onDe
           <div className="flex items-center gap-5">
             {/* Photo upload / avatar container */}
             <div className="relative w-20 h-20 flex-shrink-0 group">
-              <div className="w-20 h-20 rounded-2xl bg-white/25 dark:bg-zinc-850/40 flex items-center justify-center border-2 border-white/50 dark:border-zinc-700/50 overflow-hidden shadow-inner">
+              <div
+                onClick={() => setShowPhotoOptions(true)}
+                className="w-20 h-20 rounded-2xl bg-white/25 dark:bg-zinc-850/40 flex items-center justify-center border-2 border-white/50 dark:border-zinc-700/50 overflow-hidden shadow-inner cursor-pointer hover:brightness-105 transition-all"
+              >
                 {cow.photo ? (
                   <img src={cow.photo} alt={cow.name} className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-4xl">{cowIcon(cow.gender)}</span>
+                  <span className="text-4xl select-none">{cowIcon(cow.gender)}</span>
                 )}
               </div>
-              <label className="absolute -bottom-2 -right-2 w-8 h-8 bg-white dark:bg-zinc-800 rounded-full flex items-center justify-center text-sm shadow-md border-2 border-[#e4c97e] dark:border-zinc-700 cursor-pointer hover:scale-105 active:scale-95 transition-all">
+              <button
+                type="button"
+                onClick={() => setShowPhotoOptions(true)}
+                className="absolute -bottom-2 -right-2 w-8 h-8 bg-white dark:bg-zinc-800 rounded-full flex items-center justify-center text-sm shadow-md border-2 border-[#e4c97e] dark:border-zinc-700 cursor-pointer hover:scale-105 active:scale-95 transition-all"
+              >
                 📷
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handlePhotoUpload}
-                  className="hidden"
-                />
-              </label>
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                className="hidden"
+              />
             </div>
 
             {/* General Info */}
@@ -481,6 +494,71 @@ export default function AnimalDetailModal({ cow, isOpen, onClose, onUpdate, onDe
           )}
         </div>
       </div>
+
+      {/* Photo Options Select Modal */}
+      {showPhotoOptions && (
+        <div
+          onClick={() => setShowPhotoOptions(false)}
+          className="fixed inset-0 bg-black/60 z-55 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in"
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            className="bg-white dark:bg-zinc-900 rounded-3xl w-full max-w-xs p-5 shadow-2xl border border-stone-200/50 dark:border-zinc-800 animate-scale-up space-y-3"
+          >
+            <h4 className="text-center font-serif-playfair text-base font-bold text-stone-850 dark:text-zinc-150 border-b border-stone-100 dark:border-zinc-800/80 pb-2">
+              Fotoğraf Seçenekleri
+            </h4>
+            <button
+              type="button"
+              onClick={() => {
+                setShowPhotoOptions(false);
+                setShowCamera(true);
+              }}
+              className="w-full bg-stone-50 dark:bg-zinc-800/80 hover:bg-stone-100 dark:hover:bg-zinc-700/80 text-stone-750 dark:text-zinc-200 font-bold py-2.5 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 border border-stone-200 dark:border-zinc-700/50"
+            >
+              📷 Fotoğraf Çek
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShowPhotoOptions(false);
+                fileInputRef.current.click();
+              }}
+              className="w-full bg-stone-50 dark:bg-zinc-800/80 hover:bg-stone-100 dark:hover:bg-zinc-700/80 text-stone-750 dark:text-zinc-200 font-bold py-2.5 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 border border-stone-200 dark:border-zinc-700/50"
+            >
+              🖼️ Galeriden Seç
+            </button>
+            {cow.photo && (
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPhotoOptions(false);
+                  handleRemovePhoto();
+                }}
+                className="w-full bg-rose-50 dark:bg-rose-950/20 hover:bg-rose-100 dark:hover:bg-rose-950/40 border border-rose-200 dark:border-rose-900/30 text-rose-650 dark:text-rose-455 font-bold py-2.5 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 border border-rose-200 dark:border-rose-900/30"
+              >
+                🗑️ Fotoğrafı Kaldır
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setShowPhotoOptions(false)}
+              className="w-full bg-stone-200 hover:bg-stone-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-750 dark:text-zinc-300 font-bold py-2.5 px-4 rounded-xl text-xs transition-all text-center"
+            >
+              Vazgeç
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Camera Capture Modal */}
+      <CameraCaptureModal
+        isOpen={showCamera}
+        onClose={() => setShowCamera(false)}
+        onCapture={(imgData) => {
+          onUpdate({ ...cow, photo: imgData });
+        }}
+      />
     </div>
   );
 }

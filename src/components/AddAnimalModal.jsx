@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { BREEDS, STATUS_STYLES } from '../utils';
+import { BREEDS, STATUS_STYLES, cowIcon } from '../utils';
+import CameraCaptureModal from './CameraCaptureModal';
 
 export default function AddAnimalModal({ isOpen, onClose, onAdd }) {
   if (!isOpen) return null;
@@ -13,11 +14,25 @@ export default function AddAnimalModal({ isOpen, onClose, onAdd }) {
     color: '',
     breed: 'Holstein',
     gender: 'Dişi',
-    status: 'Sağlıklı'
+    status: 'Sağlıklı',
+    photo: null
   });
+
+  const [showCamera, setShowCamera] = useState(false);
 
   const handleChange = (key, val) => {
     setForm(prev => ({ ...prev, [key]: val }));
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      handleChange('photo', event.target.result);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = (e) => {
@@ -41,7 +56,7 @@ export default function AddAnimalModal({ isOpen, onClose, onAdd }) {
       lastVaccine: '',
       lastBirth: '',
       deathDate: form.status === 'Öldü' ? new Date().toISOString().split('T')[0] : '',
-      photo: null,
+      photo: form.photo,
       notes: []
     });
 
@@ -55,7 +70,8 @@ export default function AddAnimalModal({ isOpen, onClose, onAdd }) {
       color: '',
       breed: 'Holstein',
       gender: 'Dişi',
-      status: 'Sağlıklı'
+      status: 'Sağlıklı',
+      photo: null
     });
     onClose();
   };
@@ -88,6 +104,55 @@ export default function AddAnimalModal({ isOpen, onClose, onAdd }) {
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          
+          {/* Fotoğraf Ekleme Alanı */}
+          <div className="flex items-center gap-5 pb-4 border-b border-stone-100 dark:border-zinc-800">
+            {/* Avatar Gösterimi */}
+            <div className="relative w-20 h-20 flex-shrink-0">
+              <div className="w-20 h-20 rounded-2xl bg-stone-50 dark:bg-zinc-800 flex items-center justify-center border-2 border-stone-200 dark:border-zinc-700/60 overflow-hidden shadow-inner">
+                {form.photo ? (
+                  <img src={form.photo} alt="Önizleme" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-4xl select-none">{cowIcon(form.gender)}</span>
+                )}
+              </div>
+            </div>
+
+            {/* Yükleme Butonları */}
+            <div className="flex-1 space-y-2">
+              <span className="text-[10px] text-stone-550 dark:text-zinc-400 font-bold uppercase tracking-wider block">
+                İnek Fotoğrafı
+              </span>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowCamera(true)}
+                  className="bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-stone-200 dark:border-zinc-700/60 text-stone-750 dark:text-zinc-300 font-bold py-1.5 px-3 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-sm"
+                >
+                  📷 Fotoğraf Çek
+                </button>
+                <label className="bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-stone-200 dark:border-zinc-700/60 text-stone-750 dark:text-zinc-300 font-bold py-1.5 px-3 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-sm cursor-pointer">
+                  🖼️ Galeriden Seç
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </label>
+                {form.photo && (
+                  <button
+                    type="button"
+                    onClick={() => handleChange('photo', null)}
+                    className="bg-rose-50 dark:bg-rose-950/20 hover:bg-rose-100 dark:hover:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40 text-rose-650 dark:text-rose-400 font-bold py-1.5 px-3 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-sm"
+                  >
+                    🗑️ Fotoğrafı Kaldır
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             {/* İnek Adı */}
             <div>
@@ -239,6 +304,13 @@ export default function AddAnimalModal({ isOpen, onClose, onAdd }) {
           </div>
         </form>
       </div>
+
+      {/* Camera Capture Modal */}
+      <CameraCaptureModal
+        isOpen={showCamera}
+        onClose={() => setShowCamera(false)}
+        onCapture={(imgData) => handleChange('photo', imgData)}
+      />
     </div>
   );
 }
