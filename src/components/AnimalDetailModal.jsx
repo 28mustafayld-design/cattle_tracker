@@ -135,13 +135,13 @@ export default function AnimalDetailModal({ cow, isOpen, onClose, onUpdate, onDe
           
           <div className="flex items-center gap-5">
             {/* Photo upload / avatar container */}
-            <div className="relative w-20 h-20 flex-shrink-0 group">
+            <div className="relative w-28 h-28 flex-shrink-0 group">
               <div
                 onClick={() => setShowPhotoOptions(true)}
-                className="w-20 h-20 rounded-2xl bg-white/25 dark:bg-zinc-850/40 flex items-center justify-center border-2 border-white/50 dark:border-zinc-700/50 overflow-hidden shadow-inner cursor-pointer hover:brightness-105 transition-all"
+                className="w-28 h-28 rounded-2xl bg-white/25 dark:bg-zinc-850/40 flex items-center justify-center border-2 border-white/50 dark:border-zinc-700/50 overflow-hidden shadow-inner cursor-pointer hover:brightness-105 transition-all"
               >
                 {cow.photo ? (
-                  <img src={cow.photo} alt={cow.name} className="w-full h-full object-cover" />
+                  <img src={cow.photo} alt={cow.name} className="w-full h-full object-contain bg-black/20" />
                 ) : (
                   <span className="text-4xl select-none">{cowIcon(cow.gender)}</span>
                 )}

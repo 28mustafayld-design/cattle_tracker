@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Sürü Takip</string>
+    <string name="title_activity_main">Sürü Takip</string>
+    <string name="package_name">com.surutakip.app</string>
+    <string name="custom_url_scheme">com.surutakip.app</string>
+</resources>

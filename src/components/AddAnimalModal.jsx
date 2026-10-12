@@ -108,10 +108,10 @@ export default function AddAnimalModal({ isOpen, onClose, onAdd }) {
           {/* Fotoğraf Ekleme Alanı */}
           <div className="flex items-center gap-5 pb-4 border-b border-stone-100 dark:border-zinc-800">
             {/* Avatar Gösterimi */}
-            <div className="relative w-20 h-20 flex-shrink-0">
-              <div className="w-20 h-20 rounded-2xl bg-stone-50 dark:bg-zinc-800 flex items-center justify-center border-2 border-stone-200 dark:border-zinc-700/60 overflow-hidden shadow-inner">
+            <div className="relative w-28 h-28 flex-shrink-0">
+              <div className="w-28 h-28 rounded-2xl bg-stone-50 dark:bg-zinc-800 flex items-center justify-center border-2 border-stone-200 dark:border-zinc-700/60 overflow-hidden shadow-inner">
                 {form.photo ? (
-                  <img src={form.photo} alt="Önizleme" className="w-full h-full object-cover" />
+                  <img src={form.photo} alt="Önizleme" className="w-full h-full object-contain" />
                 ) : (
                   <span className="text-4xl select-none">{cowIcon(form.gender)}</span>
                 )}

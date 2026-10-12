@@ -10,18 +10,23 @@ export default function AnimalCard({ cow, onClick }) {
       className="bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 border border-stone-200/60 dark:border-zinc-800"
     >
       {/* Card Header (Photo/Placeholder & Status Badge) */}
-      <div className="h-[130px] bg-gradient-to-br from-[#7c5c2e] via-[#b8924a] to-[#e4c97e] dark:from-[#3a2c16] dark:to-[#7c5c2e] flex items-center justify-center relative select-none">
+      <div className="relative select-none bg-gradient-to-br from-[#7c5c2e] via-[#b8924a] to-[#e4c97e] dark:from-[#3a2c16] dark:to-[#7c5c2e]">
         {cow.photo ? (
-          <img
-            src={cow.photo}
-            alt={cow.name || cow.tagNo}
-            className="w-full h-full object-cover absolute inset-0"
-            loading="lazy"
-          />
+          // Plain in-flow <img>: the photo defines the box height, so it is never cropped or stretched.
+          <>
+            <img
+              src={cow.photo}
+              alt={cow.name || cow.tagNo}
+              style={{ display: 'block', width: '100%', height: 'auto' }}
+              draggable={false}
+            />
+          </>
         ) : (
-          <span className="text-6xl filter drop-shadow-md select-none transform hover:scale-110 transition-transform duration-300">
-            {cowIcon(cow.gender)}
-          </span>
+          <div className="aspect-[10/9] flex items-center justify-center">
+            <span className="text-6xl filter drop-shadow-md select-none transform hover:scale-110 transition-transform duration-300">
+              {cowIcon(cow.gender)}
+            </span>
+          </div>
         )}
         
         {/* Absolute Status Badge */}
